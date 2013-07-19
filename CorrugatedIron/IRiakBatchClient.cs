@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+using System.Threading.Tasks;
 using CorrugatedIron.Models;
 using CorrugatedIron.Models.Index;
 using CorrugatedIron.Models.MapReduce;
@@ -27,52 +28,52 @@ namespace CorrugatedIron
     public interface IRiakBatchClient
     {
         int RetryCount { get; set; }
-        RiakResult Ping();
+        Task<RiakResult> Ping();
 
-        RiakResult<RiakObject> Get(RiakObjectId objectId, RiakGetOptions options = null);
-        RiakResult<RiakObject> Get(string bucket, string key, RiakGetOptions options = null);
-        IEnumerable<RiakResult<RiakObject>> Get(IEnumerable<RiakObjectId> bucketKeyPairs, RiakGetOptions options = null);
-        
-        RiakCounterResult IncrementCounter(string bucket, string counter, long amount, RiakCounterUpdateOptions options = null);
-        RiakCounterResult GetCounter(string bucket, string counter, RiakCounterGetOptions options = null);
+        Task<RiakResult<RiakObject>> Get(RiakObjectId objectId, RiakGetOptions options = null);
+        Task<RiakResult<RiakObject>> Get(string bucket, string key, RiakGetOptions options = null);
+        Task<IEnumerable<RiakResult<RiakObject>>> Get(IEnumerable<RiakObjectId> bucketKeyPairs, RiakGetOptions options = null);
 
-        RiakResult<RiakObject> Put(RiakObject value, RiakPutOptions options = null);
-        IEnumerable<RiakResult<RiakObject>> Put(IEnumerable<RiakObject> values, RiakPutOptions options = null);
+        Task<RiakCounterResult> IncrementCounter(string bucket, string counter, long amount, RiakCounterUpdateOptions options = null);
+        Task<RiakCounterResult> GetCounter(string bucket, string counter, RiakCounterGetOptions options = null);
 
-        RiakResult Delete(string bucket, string key, RiakDeleteOptions options = null);
-        RiakResult Delete(RiakObjectId objectId, RiakDeleteOptions options = null);
-        IEnumerable<RiakResult> Delete(IEnumerable<RiakObjectId> objectIds, RiakDeleteOptions options = null);
-        IEnumerable<RiakResult> DeleteBucket(string bucket, uint rwVal = RiakConstants.Defaults.RVal);
+        Task<RiakResult<RiakObject>> Put(RiakObject value, RiakPutOptions options = null);
+        Task<IEnumerable<RiakResult<RiakObject>>> Put(IEnumerable<RiakObject> values, RiakPutOptions options = null);
 
-        RiakResult<RiakSearchResult> Search(RiakSearchRequest search);
+        Task<RiakResult> Delete(string bucket, string key, RiakDeleteOptions options = null);
+        Task<RiakResult> Delete(RiakObjectId objectId, RiakDeleteOptions options = null);
+        Task<IEnumerable<RiakResult>> Delete(IEnumerable<RiakObjectId> objectIds, RiakDeleteOptions options = null);
+        Task<IEnumerable<RiakResult>> DeleteBucket(string bucket, uint rwVal = RiakConstants.Defaults.RVal);
 
-        RiakResult<RiakMapReduceResult> MapReduce(RiakMapReduceQuery query);
-        RiakResult<RiakStreamedMapReduceResult> StreamMapReduce(RiakMapReduceQuery query);
+        Task<RiakResult<RiakSearchResult>> Search(RiakSearchRequest search);
 
-        RiakResult<IEnumerable<string>> ListBuckets();
-        RiakResult<IEnumerable<string>> StreamListBuckets();
-        RiakResult<IEnumerable<string>> ListKeys(string bucket);
-        RiakResult<IEnumerable<string>> StreamListKeys(string bucket);
+        Task<RiakResult<RiakMapReduceResult>> MapReduce(RiakMapReduceQuery query);
+        Task<RiakResult<RiakStreamedMapReduceResult>> StreamMapReduce(RiakMapReduceQuery query);
 
-        RiakResult<RiakBucketProperties> GetBucketProperties(string bucket);
-        RiakResult SetBucketProperties(string bucket, RiakBucketProperties properties, bool useHttp = false);
-        RiakResult ResetBucketProperties(string bucket, bool useHttp = false);
+        Task<RiakResult<IEnumerable<string>>> ListBuckets();
+        Task<RiakResult<IEnumerable<string>>> StreamListBuckets();
+        Task<RiakResult<IEnumerable<string>>> ListKeys(string bucket);
+        Task<RiakResult<IEnumerable<string>>> StreamListKeys(string bucket);
 
-        RiakResult<IList<RiakObject>> WalkLinks(RiakObject riakObject, IList<RiakLink> riakLinks);
+        Task<RiakResult<RiakBucketProperties>> GetBucketProperties(string bucket);
+        Task<RiakResult> SetBucketProperties(string bucket, RiakBucketProperties properties, bool useHttp = false);
+        Task<RiakResult> ResetBucketProperties(string bucket, bool useHttp = false);
 
-        RiakResult<RiakServerInfo> GetServerInfo();
+        Task<RiakResult<IList<RiakObject>>> WalkLinks(RiakObject riakObject, IList<RiakLink> riakLinks);
 
-        RiakResult<RiakIndexResult> IndexGet(string bucket, string indexName, BigInteger value, RiakIndexGetOptions options = null);
-        RiakResult<RiakIndexResult> IndexGet(string bucket, string indexName, string value, RiakIndexGetOptions options = null);
-        RiakResult<RiakIndexResult> IndexGet(string bucket, string indexName, BigInteger minValue, BigInteger maxValue, RiakIndexGetOptions options = null);
-        RiakResult<RiakIndexResult> IndexGet(string bucket, string indexName, string minValue, string maxValue, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakServerInfo>> GetServerInfo();
 
-        RiakResult<RiakStreamedIndexResult> StreamIndexGet(string bucket, string indexName, BigInteger value, RiakIndexGetOptions options = null);
-        RiakResult<RiakStreamedIndexResult> StreamIndexGet(string bucket, string indexName, string value, RiakIndexGetOptions options = null);
-        RiakResult<RiakStreamedIndexResult> StreamIndexGet(string bucket, string indexName, BigInteger minValue, BigInteger maxValue, RiakIndexGetOptions options = null);
-        RiakResult<RiakStreamedIndexResult> StreamIndexGet(string bucket, string indexName, string minValue, string maxValue, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakIndexResult>> IndexGet(string bucket, string indexName, BigInteger value, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakIndexResult>> IndexGet(string bucket, string indexName, string value, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakIndexResult>> IndexGet(string bucket, string indexName, BigInteger minValue, BigInteger maxValue, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakIndexResult>> IndexGet(string bucket, string indexName, string minValue, string maxValue, RiakIndexGetOptions options = null);
 
-        RiakResult<IList<string>> ListKeysFromIndex(string bucket);
+        Task<RiakResult<RiakStreamedIndexResult>> StreamIndexGet(string bucket, string indexName, BigInteger value, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakStreamedIndexResult>> StreamIndexGet(string bucket, string indexName, string value, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakStreamedIndexResult>> StreamIndexGet(string bucket, string indexName, BigInteger minValue, BigInteger maxValue, RiakIndexGetOptions options = null);
+        Task<RiakResult<RiakStreamedIndexResult>> StreamIndexGet(string bucket, string indexName, string minValue, string maxValue, RiakIndexGetOptions options = null);
+
+        Task<RiakResult<IList<string>>> ListKeysFromIndex(string bucket);
 
         //RiakResult<RiakSearchResult> Search(Action<RiakSearchRequest> prepareRequest)
     }

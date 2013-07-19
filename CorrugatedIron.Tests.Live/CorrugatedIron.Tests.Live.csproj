@@ -63,7 +63,6 @@
     </Compile>
     <Compile Include="BucketPropertyTests.cs" />
     <Compile Include="GeneralIntegrationTests.cs" />
-    <Compile Include="IdleTests.cs" />
     <Compile Include="LiveRiakConnectionTestBase.cs" />
     <Compile Include="LoadTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

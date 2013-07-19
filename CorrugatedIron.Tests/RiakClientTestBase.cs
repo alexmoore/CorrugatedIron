@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+using System.Threading.Tasks;
 using CorrugatedIron.Comms;
 using CorrugatedIron.Config;
 using Moq;
@@ -25,7 +26,12 @@ namespace CorrugatedIron.Tests.RiakClientTests
         where TRequest : class
         where TResult : class, new()
     {
-        protected RiakResult<TResult> Result = null;
+        protected TaskCompletionSource<RiakResult<TResult>> Tcs;
+        protected RiakResult<TResult> Result
+        {
+            get { return Tcs.Task.Result; }
+            set { Tcs.SetResult(value); }
+        }
         protected Mock<IRiakConnection> ConnMock;
         protected Mock<IRiakNodeConfiguration> NodeConfigMock;
         protected Mock<IRiakClusterConfiguration> ClusterConfigMock;
@@ -39,8 +45,9 @@ namespace CorrugatedIron.Tests.RiakClientTests
             ClusterConfigMock = new Mock<IRiakClusterConfiguration>();
             ConnFactoryMock = new Mock<IRiakConnectionFactory>();
             NodeConfigMock = new Mock<IRiakNodeConfiguration>();
+            Tcs = new TaskCompletionSource<RiakResult<TResult>>();
 
-            ConnMock.Setup(m => m.PbcWriteRead<TRequest, TResult>(It.IsAny<TRequest>())).Returns(() => Result);
+            ConnMock.Setup(m => m.PbcWriteRead<TRequest, TResult>(It.IsAny<TRequest>())).Returns(() => Tcs.Task);
             ConnFactoryMock.Setup(m => m.CreateConnection(It.IsAny<IRiakNodeConfiguration>())).Returns(ConnMock.Object);
             NodeConfigMock.SetupGet(m => m.PoolSize).Returns(1);
             ClusterConfigMock.SetupGet(m => m.RiakNodes).Returns(new List<IRiakNodeConfiguration> { NodeConfigMock.Object });

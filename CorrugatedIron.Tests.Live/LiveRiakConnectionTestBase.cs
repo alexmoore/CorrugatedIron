@@ -18,6 +18,7 @@ using CorrugatedIron.Config;
 using CorrugatedIron.Extensions;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CorrugatedIron.Tests.Live.LiveRiakConnectionTests
 {
@@ -39,6 +40,7 @@ namespace CorrugatedIron.Tests.Live.LiveRiakConnectionTests
 
         protected IRiakEndPoint Cluster;
         protected IRiakClient Client;
+        protected IRiakAsyncClient AsyncClient;
         protected IRiakClusterConfiguration ClusterConfig;
 
         static LiveRiakConnectionTestBase()
@@ -58,7 +60,15 @@ namespace CorrugatedIron.Tests.Live.LiveRiakConnectionTests
         [SetUp]
         public void SetUp()
         {
+            AsyncClient = Cluster.CreateAsyncClient();
             Client = Cluster.CreateClient();
+        }
+
+        protected Task<TResult> ToResult<TResult>(TResult result)
+        {
+            var tcs = new TaskCompletionSource<TResult>();
+            tcs.SetResult(result);
+            return tcs.Task;
         }
     }
 }

@@ -14,10 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+using System.Threading.Tasks;
 using CorrugatedIron.Config;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using CorrugatedIron.Extensions;
 
 namespace CorrugatedIron.Comms
 {
@@ -41,64 +43,29 @@ namespace CorrugatedIron.Comms
             }
         }
 
-        public Tuple<bool, TResult> Consume<TResult>(Func<IRiakConnection, TResult> consumer)
+        public Task<Tuple<bool, TResult>> Consume<TResult>(Func<IRiakConnection, Task<TResult>> consumer)
         {
-            if(_disposing) return Tuple.Create(false, default(TResult));
+            if(_disposing) return Tuple.Create(false, default(TResult)).ToTask();
 
             IRiakConnection instance = null;
-            try
+            if(_resources.TryPop(out instance))
+
             {
-                if(_resources.TryPop(out instance))
-                {
-                    var result = consumer(instance);
-                    return Tuple.Create(true, result);
-                }
-            }
-            catch(Exception)
-            {
-                return Tuple.Create(false, default(TResult));
-            }
-            finally
-            {
-                if(instance != null)
-                {
-                    _resources.Push(instance);
-                }
+                return consumer(instance)
+                    .ContinueWith(t =>
+                        {
+                            if (instance != null)
+                            {
+                                _resources.Push(instance);
+                            }
+
+                            return t.IsFaulted
+                                ? Tuple.Create(false, default(TResult))
+                                : Tuple.Create(true, t.Result);
+                        });
             }
 
-            return Tuple.Create(false, default(TResult));
-        }
-
-        public Tuple<bool, TResult> DelayedConsume<TResult>(Func<IRiakConnection, Action, TResult> consumer)
-        {
-            if(_disposing) return Tuple.Create(false, default(TResult));
-
-            IRiakConnection instance = null;
-            try
-            {
-                if(_resources.TryPop(out instance))
-                {
-                    Action cleanup = () =>
-                    {
-                        var i = instance;
-                        instance = null;
-                        _resources.Push(i);
-                    };
-
-                    var result = consumer(instance, cleanup);
-                    return Tuple.Create(true, result);
-                }
-            }
-            catch(Exception)
-            {
-                if(instance != null)
-                {
-                    _resources.Push(instance);
-                }
-                return Tuple.Create(false, default(TResult));
-            }
-
-            return Tuple.Create(false, default(TResult));
+            return Tuple.Create(false, default(TResult)).ToTask();
         }
 
         public void Dispose()

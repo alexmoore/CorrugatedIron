@@ -80,6 +80,7 @@
     <Compile Include="Containers\Either.cs" />
     <Compile Include="Exceptions\RiakInvalidDataException.cs" />
     <Compile Include="Exceptions\RiakException.cs" />
+    <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="IRiakBatchClient.cs" />
     <Compile Include="IRiakEndPoint.cs" />
     <Compile Include="Models\Index\IRiakIndexResult.cs" />
@@ -227,8 +228,8 @@
     <Compile Include="Models\Search\Token.cs" />
     <Compile Include="Models\Search\UnaryTerm.cs" />
     <Compile Include="Models\Index\SecondaryIndex.cs" />
-    <Compile Include="RiakAsyncClient.cs" />
     <Compile Include="RiakClient.cs" />
+    <Compile Include="RiakAsyncClient.cs" />
     <Compile Include="Comms\RiakConnection.cs" />
     <Compile Include="Comms\RiakConnectionFactory.cs" />
     <Compile Include="RiakCluster.cs" />

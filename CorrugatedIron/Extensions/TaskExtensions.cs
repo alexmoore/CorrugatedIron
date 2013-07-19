@@ -1,4 +1,4 @@
-// Copyright (c) 2011 - OJ Reeves & Jeremiah Peschka
+﻿// Copyright (c) 2013 - OJ Reeves & Jeremiah Peschka
 //
 // This file is provided to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file
@@ -14,20 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-using CorrugatedIron.Comms;
-using System;
 using System.Threading.Tasks;
 
-namespace CorrugatedIron
+namespace CorrugatedIron.Extensions
 {
-    public interface IRiakEndPoint : IDisposable
+    internal static class TaskExtensions
     {
-        int RetryWaitTime { get; set; }
-
-        IRiakClient CreateClient();
-        IRiakAsyncClient CreateAsyncClient();
-
-        Task<RiakResult<TResult>> UseConnection<TResult>(Func<IRiakConnection, Task<RiakResult<TResult>>> useFun, int retryAttempts);
-        Task<RiakResult> UseConnection(Func<IRiakConnection, Task<RiakResult>> useFun, int retryAttempts);
+        public static Task<T> ToTask<T>(this T obj)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            tcs.SetResult(obj);
+            return tcs.Task;
+        }
     }
 }

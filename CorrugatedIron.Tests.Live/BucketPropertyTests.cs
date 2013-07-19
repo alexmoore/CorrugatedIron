@@ -24,7 +24,6 @@ using CorrugatedIron.Util;
 using NUnit.Framework;
 using System;
 using System.Linq;
-using System.Threading;
 
 namespace CorrugatedIron.Tests.Live.BucketPropertyTests
 {
@@ -45,7 +44,8 @@ namespace CorrugatedIron.Tests.Live.BucketPropertyTests
             Func<string> generator = () => Guid.NewGuid().ToString();
             var bucket = generator();
             var pairs = generator.Replicate(10).Select(f => new RiakObject(bucket, f(), "foo", RiakConstants.ContentTypes.TextPlain)).ToList();
-            Client.Put(pairs);
+            var putResult = Client.Put(pairs).ToList();
+            putResult.ForEach(x => x.IsSuccess.ShouldBeTrue(x.ErrorMessage));
 
             var results = Client.ListKeys(bucket);
             results.IsSuccess.ShouldBeTrue(results.ErrorMessage);
@@ -218,86 +218,88 @@ namespace CorrugatedIron.Tests.Live.BucketPropertyTests
         [Test]
         public void CommitHooksAreStoredAndLoadedProperlyInBatch()
         {
-            Client.Batch(batch =>
-                {
-                    // make sure we're all clear first
-                    var result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    var props = result.Value;
-                    props.ClearPostCommitHooks().ClearPreCommitHooks();
-                    var propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
-                    propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
+            //Client.Batch(batch =>
+            //    {
+            //        // make sure we're all clear first
+            //        var result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        var props = result.Value;
+            //        props.ClearPostCommitHooks().ClearPreCommitHooks();
+            //        var propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
+            //        propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
 
-                    // when we load, the commit hook lists should be null
-                    result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    props = result.Value;
-                    props.PreCommitHooks.ShouldBeNull();
-                    props.PostCommitHooks.ShouldBeNull();
+            //        // when we load, the commit hook lists should be null
+            //        result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        props = result.Value;
+            //        props.PreCommitHooks.ShouldBeNull();
+            //        props.PostCommitHooks.ShouldBeNull();
 
-                    // we then store something in each
-                    props.AddPreCommitHook(new RiakJavascriptCommitHook("Foo.doBar"))
-                        .AddPreCommitHook(new RiakErlangCommitHook("my_mod", "do_fun"))
-                        .AddPostCommitHook(new RiakErlangCommitHook("my_other_mod", "do_more"));
-                    propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
-                    propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
+            //        // we then store something in each
+            //        props.AddPreCommitHook(new RiakJavascriptCommitHook("Foo.doBar"))
+            //            .AddPreCommitHook(new RiakErlangCommitHook("my_mod", "do_fun"))
+            //            .AddPostCommitHook(new RiakErlangCommitHook("my_other_mod", "do_more"));
+            //        propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
+            //        propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
 
-                    // load them out again and make sure they got loaded up
-                    result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    props = result.Value;
+            //        // load them out again and make sure they got loaded up
+            //        result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        props = result.Value;
 
-                    props.PreCommitHooks.ShouldNotBeNull();
-                    props.PreCommitHooks.Count.ShouldEqual(2);
-                    props.PostCommitHooks.ShouldNotBeNull();
-                    props.PostCommitHooks.Count.ShouldEqual(1);
-                });
+            //        props.PreCommitHooks.ShouldNotBeNull();
+            //        props.PreCommitHooks.Count.ShouldEqual(2);
+            //        props.PostCommitHooks.ShouldNotBeNull();
+            //        props.PostCommitHooks.Count.ShouldEqual(1);
+            //    });
+            throw new NotImplementedException();
         }
 
         [Test]
         public void CommitHooksAreStoredAndLoadedProperlyInAsyncBatch()
         {
-            var completed = false;
-            var task = Client.Async.Batch(batch =>
-                {
-                    // make sure we're all clear first
-                    var result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    var props = result.Value;
-                    props.ClearPostCommitHooks().ClearPreCommitHooks();
-                    var propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
-                    propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
+            //var completed = false;
+            //var task = Client.FooAsync.Batch(batch =>
+            //    {
+            //        // make sure we're all clear first
+            //        var result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        var props = result.Value;
+            //        props.ClearPostCommitHooks().ClearPreCommitHooks();
+            //        var propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
+            //        propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
 
-                    // when we load, the commit hook lists should be null
-                    result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    props = result.Value;
-                    props.PreCommitHooks.ShouldBeNull();
-                    props.PostCommitHooks.ShouldBeNull();
+            //        // when we load, the commit hook lists should be null
+            //        result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        props = result.Value;
+            //        props.PreCommitHooks.ShouldBeNull();
+            //        props.PostCommitHooks.ShouldBeNull();
 
-                    // we then store something in each
-                    props.AddPreCommitHook(new RiakJavascriptCommitHook("Foo.doBar"))
-                        .AddPreCommitHook(new RiakErlangCommitHook("my_mod", "do_fun"))
-                        .AddPostCommitHook(new RiakErlangCommitHook("my_other_mod", "do_more"));
-                    propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
-                    propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
+            //        // we then store something in each
+            //        props.AddPreCommitHook(new RiakJavascriptCommitHook("Foo.doBar"))
+            //            .AddPreCommitHook(new RiakErlangCommitHook("my_mod", "do_fun"))
+            //            .AddPostCommitHook(new RiakErlangCommitHook("my_other_mod", "do_more"));
+            //        propResult = batch.SetBucketProperties(PropertiesTestBucket, props);
+            //        propResult.IsSuccess.ShouldBeTrue(propResult.ErrorMessage);
 
-                    // load them out again and make sure they got loaded up
-                    result = batch.GetBucketProperties(PropertiesTestBucket);
-                    result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
-                    props = result.Value;
+            //        // load them out again and make sure they got loaded up
+            //        result = batch.GetBucketProperties(PropertiesTestBucket);
+            //        result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
+            //        props = result.Value;
 
-                    props.PreCommitHooks.ShouldNotBeNull();
-                    props.PreCommitHooks.Count.ShouldEqual(2);
-                    props.PostCommitHooks.ShouldNotBeNull();
-                    props.PostCommitHooks.Count.ShouldEqual(1);
+            //        props.PreCommitHooks.ShouldNotBeNull();
+            //        props.PreCommitHooks.Count.ShouldEqual(2);
+            //        props.PostCommitHooks.ShouldNotBeNull();
+            //        props.PostCommitHooks.Count.ShouldEqual(1);
 
-                    completed = true;
-                });
+            //        completed = true;
+            //    });
 
-            task.Wait();
+            //task.Wait();
 
-            completed.ShouldBeTrue();
+            //completed.ShouldBeTrue();
+            throw new NotImplementedException();
         }
 
         [Test]

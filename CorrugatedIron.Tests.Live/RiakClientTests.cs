@@ -60,22 +60,23 @@ namespace CorrugatedIron.Tests.Live
         [Test]
         public void DeleteIsSuccessfulInBatch()
         {
-            Client.Batch(batch =>
-                {
-                    var riakObject = new RiakObject(TestBucket, TestKey, TestJson, RiakConstants.ContentTypes.ApplicationJson);
-                    var riakObjectId = riakObject.ToRiakObjectId();
+            //Client.Batch(batch =>
+            //    {
+            //        var riakObject = new RiakObject(TestBucket, TestKey, TestJson, RiakConstants.ContentTypes.ApplicationJson);
+            //        var riakObjectId = riakObject.ToRiakObjectId();
 
-                    var putResult = batch.Put(riakObject);
-                    putResult.IsSuccess.ShouldBeTrue(putResult.ErrorMessage);
+            //        var putResult = batch.Put(riakObject);
+            //        putResult.IsSuccess.ShouldBeTrue(putResult.ErrorMessage);
 
-                    var delResult = batch.Delete(riakObjectId);
-                    delResult.IsSuccess.ShouldBeTrue(delResult.ErrorMessage);
+            //        var delResult = batch.Delete(riakObjectId);
+            //        delResult.IsSuccess.ShouldBeTrue(delResult.ErrorMessage);
 
-                    var getResult = batch.Get(riakObjectId);
-                    getResult.IsSuccess.ShouldBeFalse();
-                    getResult.ResultCode.ShouldEqual(ResultCode.NotFound);
-                    getResult.Value.ShouldBeNull();
-                });
+            //        var getResult = batch.Get(riakObjectId);
+            //        getResult.IsSuccess.ShouldBeFalse();
+            //        getResult.ResultCode.ShouldEqual(ResultCode.NotFound);
+            //        getResult.Value.ShouldBeNull();
+            //    });
+            throw new NotImplementedException();
         }
 
         [Test]
@@ -87,7 +88,7 @@ namespace CorrugatedIron.Tests.Live
             var putResult = Client.Put(riakObject);
             putResult.IsSuccess.ShouldBeTrue(putResult.ErrorMessage);
 
-            var result = Client.Async.Delete(riakObjectId).Result;
+            var result = AsyncClient.Delete(riakObjectId).Result;
 
             result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
 
@@ -111,7 +112,7 @@ namespace CorrugatedIron.Tests.Live
 
             var list = new List<RiakObjectId> { oneObjectId, twoObjectId };
 
-            var results = Client.Async.Delete(list).Result;
+            var results = AsyncClient.Delete(list).Result;
 
             foreach (var riakResult in results)
             {
@@ -143,7 +144,7 @@ namespace CorrugatedIron.Tests.Live
 
             var list = new List<RiakObjectId> {oneObjectId, twoObjectId};
 
-            var results = Client.Async.Get(list).Result;
+            var results = AsyncClient.Get(list).Result;
 
             foreach (var result in results)
             {
@@ -160,7 +161,7 @@ namespace CorrugatedIron.Tests.Live
 
             Client.Put(riakObject);
 
-            var result = Client.Async.Get(riakObjectId).Result;
+            var result = AsyncClient.Get(riakObjectId).Result;
 
             result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
             result.Value.ShouldNotBeNull();
@@ -174,7 +175,7 @@ namespace CorrugatedIron.Tests.Live
         {
             var riakObject = new RiakObject(TestBucket, TestKey, TestJson, RiakConstants.ContentTypes.ApplicationJson);
 
-            var result = Client.Async.Put(riakObject).Result;
+            var result = AsyncClient.Put(riakObject).Result;
             
             result.IsSuccess.ShouldBeTrue(result.ErrorMessage);
             result.Value.ShouldNotBeNull();
@@ -186,7 +187,7 @@ namespace CorrugatedIron.Tests.Live
             var one = new RiakObject(TestBucket, "one", TestJson, RiakConstants.ContentTypes.ApplicationJson);
             var two = new RiakObject(TestBucket, "two", TestJson, RiakConstants.ContentTypes.ApplicationJson);
 
-            var results = Client.Async.Put(new List<RiakObject> {one, two}).Result;
+            var results = AsyncClient.Put(new List<RiakObject> {one, two}).Result;
 
             foreach (var riakResult in results)
             {
@@ -209,7 +210,7 @@ namespace CorrugatedIron.Tests.Live
                 Client.Put(o);
             }
 
-            var result = ((RiakClient)Client).ListKeysFromIndex(bucket);
+            var result = Client.ListKeysFromIndex(bucket);
             var keys = result.Value;
 
             keys.Count.ShouldEqual(10);

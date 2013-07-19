@@ -43,7 +43,12 @@ namespace CorrugatedIron.Tests.Live.LoadTests
         //private const int ThreadCount = 1;
         //private const int ActionCount = 1;
 
-        public WhenUnderLoad(string configSection = "riakLoadTestConfiguration")
+        public WhenUnderLoad()
+            : base("riakLoadTestConfiguration")
+        {
+        }
+
+        public WhenUnderLoad(string configSection)
             : base(configSection)
         {
         }
@@ -72,14 +77,16 @@ namespace CorrugatedIron.Tests.Live.LoadTests
                 .ReduceJs(r => r.Name(@"Riak.reduceSum").Keep(true));
             query.Compile();
 
-            var results = new List<RiakResult<RiakMapReduceResult>>[ThreadCount];
+            var results = new Task<RiakResult<RiakMapReduceResult>>[ThreadCount];
             Parallel.For(0, ThreadCount, i =>
                 {
-                    results[i] = DoMapRed(query);
+                    results[i] = AsyncClient.MapReduce(query);
                 });
 
+            Task.WaitAll(results);
+
             var failures = 0;
-            foreach (var r in results.SelectMany(l => l))
+            foreach (var r in results.Select(l => l.Result))
             {
                 if (r.IsSuccess)
                 {

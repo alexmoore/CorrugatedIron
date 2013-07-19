@@ -14,19 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
+using System.Threading.Tasks;
 using CorrugatedIron.Config;
 using System;
-using System.Collections.Generic;
+using CorrugatedIron.Extensions;
 
 namespace CorrugatedIron.Comms
 {
     public interface IRiakNode : IDisposable
     {
-        RiakResult UseConnection(Func<IRiakConnection, RiakResult> useFun);
-        RiakResult<TResult> UseConnection<TResult>(Func<IRiakConnection, RiakResult<TResult>> useFun);
-
-        RiakResult<IEnumerable<TResult>> UseDelayedConnection<TResult>(Func<IRiakConnection, Action, RiakResult<IEnumerable<TResult>>> useFun)
-            where TResult : RiakResult;
+        Task<RiakResult<TResult>> UseConnection<TResult>(Func<IRiakConnection, Task<RiakResult<TResult>>> useFun);
+        Task<RiakResult> UseConnection(Func<IRiakConnection, Task<RiakResult>> useFun);
     }
 
     public class RiakNode : IRiakNode
@@ -48,40 +46,30 @@ namespace CorrugatedIron.Comms
             }
         }
 
-        public RiakResult UseConnection(Func<IRiakConnection, RiakResult> useFun)
+        public Task<RiakResult> UseConnection(Func<IRiakConnection, Task<RiakResult>> useFun)
         {
             return UseConnection(useFun, RiakResult.Error);
         }
 
-        public RiakResult<TResult> UseConnection<TResult>(Func<IRiakConnection, RiakResult<TResult>> useFun)
+        public Task<RiakResult<TResult>> UseConnection<TResult>(Func<IRiakConnection, Task<RiakResult<TResult>>> useFun)
         {
             return UseConnection(useFun, RiakResult<TResult>.Error);
         }
 
-        private TRiakResult UseConnection<TRiakResult>(Func<IRiakConnection, TRiakResult> useFun, Func<ResultCode, string, bool, TRiakResult> onError)
+        private Task<TRiakResult> UseConnection<TRiakResult>(Func<IRiakConnection, Task<TRiakResult>> useFun, Func<ResultCode, string, bool, TRiakResult> onError)
             where TRiakResult : RiakResult
         {
-            if(_disposing) return onError(ResultCode.ShuttingDown, "Connection is shutting down", true);
+            if(_disposing) return onError(ResultCode.ShuttingDown, "Connection is shutting down", true).ToTask();
 
-            var response = _connections.Consume(useFun);
-            if(response.Item1)
-            {
-                return response.Item2;
-            }
-            return onError(ResultCode.NoConnections, "Unable to acquire connection", true);
-        }
-
-        public RiakResult<IEnumerable<TResult>> UseDelayedConnection<TResult>(Func<IRiakConnection, Action, RiakResult<IEnumerable<TResult>>> useFun)
-            where TResult : RiakResult
-        {
-            if(_disposing) return RiakResult<IEnumerable<TResult>>.Error(ResultCode.ShuttingDown, "Connection is shutting down", true);
-
-            var response = _connections.DelayedConsume(useFun);
-            if(response.Item1)
-            {
-                return response.Item2;
-            }
-            return RiakResult<IEnumerable<TResult>>.Error(ResultCode.NoConnections, "Unable to acquire connection", true);
+            return _connections.Consume(useFun)
+                .ContinueWith(t =>
+                    {
+                        if (t.Result.Item1)
+                        {
+                            return t.Result.Item2;
+                        }
+                        return onError(ResultCode.NoConnections, "Unable to acquire connection", true);
+                    });
         }
 
         public void Dispose()
